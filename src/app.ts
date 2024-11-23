@@ -2,9 +2,9 @@
 
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
-import { productRoutes } from './modules/Products/product.routes';
-import { orderRoutes } from './modules/Orders/order.routes';
 import bodyParser from 'body-parser';
+import { productRoutes } from './app/modules/Products/product.routes';
+import { orderRoutes } from './app/modules/Orders/order.routes';
 
 
 const app: Application = express();
