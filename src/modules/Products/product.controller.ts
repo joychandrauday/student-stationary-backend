@@ -7,7 +7,7 @@ const addingProduct = async (req: Request, res: Response) => {
   try {
     // Add product to the database
     console.log(req.body)
-    const product = req.body.products
+    const product = req.body
     const newProduct = await productService.addProductToDB(product)
 
     // Send success response
