@@ -2,63 +2,44 @@
 
 import { Request, Response } from 'express'
 import { orderService } from './order.service'
-import { productModel } from '../Products/product.model'
 
 // adding order to database
 const addingOrder = async (req: Request, res: Response) => {
-  const { email, product: productId, quantity, totalPrice } = req.body
-  try {
-    // Check if the product exists and has sufficient stock
-    const product = await productModel.findById(productId)
+  const order = await orderService.addOrderToDB(
+    req.ip as string,
+    req.body
+  );
 
-    if (!product) {
-      throw new Error('Product not found');
-    }
-
-    if (product.quantity < quantity) {
-      res.status(400).json({
-        message: 'Insufficient stock available',
-        status: false,
-      })
-    }
-
-    // // Reduce product quantity and update inStock if necessary
-    product.quantity -= quantity
-    if (product.quantity === 0) {
-      product.inStock = false
-    }
-    await product.save()
-
-    // // Create a new order
-    const newOrderDetails = {
-      email,
-      product: productId,
-      quantity,
-      totalPrice,
-    }
-    const newOrder = await orderService.addOrderToDB(newOrderDetails)
-
-    res.status(201).json({
-      message: 'Order created successfully',
-      status: true,
-      data: newOrder,
-    })
-    
-  } catch (error) {
-    // handle and send error response
-    res.status(400).json({
-      success: false,
-      message: error,
-    })
-    
-  }
-}
+  res.status(200).json({
+    message: 'Orders Placed successfully',
+    status: true,
+    data: order,
+  })
+};
 // getting orders from database
 const gettingOrders = async (req: Request, res: Response) => {
   try {
     const orders = await orderService.getOrders()
     res.status(200).json({
       message: 'Orders fetched successfully',
+      status: true,
+      data: orders,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching orders',
+      error,
+    })
+  }
+}
+// getting orders from database
+const gettingSingleOrder = async (req: Request, res: Response) => {
+  try {
+    const orders = await orderService.getOrderById(req.params.orderId);
+    res.status(200).json({
+      message: 'Order fetched successfully',
       status: true,
       data: orders,
     })
@@ -89,10 +70,121 @@ const calculatingRevenue = async (req: Request, res: Response) => {
     })
   }
 }
+// get single order
+
+const getSingleOrder = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.orderId
+    const order = await orderService.getOrderById(orderId)
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      })
+    }
+    res.status(200).json({
+      message: 'Order fetched successfully',
+      status: true,
+      data: order,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching order',
+      error,
+    })
+  }
+}
+// get orders by user id 
+
+const getOrdersByUserId = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId
+    const orders = await orderService.getOrdersByUserId(userId)
+    res.status(200).json({
+      message: 'Orders fetched successfully',
+      status: true,
+      data: orders,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching orders',
+      error,
+    })
+  }
+}
+
+
+
+// update order status
+
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.orderId
+    const newOrderStatus = req.body.orderStatus
+    const order = await orderService.updateOrderStatusInDB(orderId, newOrderStatus)
+    res.status(200).json({
+      message: 'Order status updated successfully',
+      status: true,
+      data: order,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order status',
+      error,
+    })
+  }
+}
+
+
+
+// delete order 
+
+const deleteOrder = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.orderId
+    await orderService.deleteOrderFromDB(orderId)
+    res.status(200).json({
+      message: 'Order deleted successfully',
+      status: true,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting order',
+      error,
+    })
+  }
+}
+
+const verifyPaymentControl = async (req: Request, res: Response) => {
+  const order = await orderService.verifyPayment(
+    req.query.sp_trxn_id as string
+  );
+
+  res.status(200).json({
+    message: 'Payment verified successfully',
+    status: true,
+    data: order,
+  });
+};
+
 
 // sending to routes
 export const orderController = {
   addingOrder,
   calculatingRevenue,
-  gettingOrders
+  gettingOrders,
+  getSingleOrder,
+  getOrdersByUserId,
+  updateOrderStatus,
+  deleteOrder,
+  gettingSingleOrder,
+  verifyPaymentControl
 }

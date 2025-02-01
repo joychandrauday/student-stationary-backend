@@ -18,6 +18,7 @@ const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log(req.body);
         const product = req.body;
         const newProduct = yield product_service_1.productService.addProductToDB(product);
+        console.log(newProduct);
         // Send success response
         res.status(201).json({
             message: 'Product added successfully',
@@ -26,6 +27,7 @@ const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (error) {
+        console.log(error);
         // Handle and send error response
         res.status(400).json({
             success: false,
@@ -37,20 +39,73 @@ const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 // 2. getting all products from database
 const gettingProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get all products from the database
-        const products = yield product_service_1.productService.getAllProducts();
-        // Send success response
+        console.log(req.query);
+        const { name, brand, category, inStock, status, minQuantity, maxQuantity, minPrice, maxPrice, minRating, maxRating, page, // Default to page 1 if not provided
+        perPage, // Default to 10 products per page if not provided
+        sortBy, sortOrder = "asc", // Default to ascending order
+         } = req.query;
+        // Create a filter object
+        const filter = {};
+        // Add filters based on query parameters
+        if (name)
+            filter.name = { $regex: new RegExp(name, "i") }; // Case-insensitive name search
+        if (brand)
+            filter.brand = { $regex: new RegExp(brand, "i") }; // Case-insensitive brand search
+        if (category)
+            filter.category = category;
+        if (inStock)
+            filter.inStock = inStock === "true"; // Convert string to boolean
+        if (status) {
+            // Ensure the status is one of the accepted values: "hor", "sale", "featured"
+            const validStatuses = ["hot", "sale", "featured"];
+            if (validStatuses.includes(status)) {
+                filter.status = status;
+            }
+        }
+        if (minQuantity)
+            filter.quantity = Object.assign(Object.assign({}, filter.quantity), { $gte: parseInt(minQuantity) });
+        if (maxQuantity)
+            filter.quantity = Object.assign(Object.assign({}, filter.quantity), { $lte: parseInt(maxQuantity) });
+        if (minPrice)
+            filter.price = Object.assign(Object.assign({}, filter.price), { $gte: parseFloat(minPrice) });
+        if (maxPrice)
+            filter.price = Object.assign(Object.assign({}, filter.price), { $lte: parseFloat(maxPrice) });
+        if (minRating)
+            filter.rating = Object.assign(Object.assign({}, filter.rating), { $gte: parseFloat(minRating) });
+        if (maxRating)
+            filter.rating = Object.assign(Object.assign({}, filter.rating), { $lte: parseFloat(maxRating) });
+        // Pagination: Calculate skip and limit values
+        const skip = (parseInt(page) - 1) * parseInt(perPage);
+        const limit = parseInt(perPage);
+        // Sorting: Build sort object
+        const sort = {};
+        if (sortBy) {
+            sort[sortBy] = sortOrder === "desc" ? -1 : 1; // Use descending order for 'desc' and ascending for 'asc'
+        }
+        // Fetch filtered products with pagination and sorting
+        const products = yield product_service_1.productService.getAllProducts(filter, skip, limit, sort);
+        // Get total count for pagination metadata
+        const totalCount = yield product_service_1.productService.getTotalCount(filter);
+        // Calculate total pages
+        const totalPages = Math.ceil(totalCount / limit);
+        // Send success response with pagination metadata
         res.status(200).json({
-            message: 'Products retrieved successfully',
+            message: "Products retrieved successfully",
             success: true,
             data: products,
+            meta: {
+                totalCount,
+                totalPages,
+                currentPage: page,
+                perPage: perPage,
+            },
         });
     }
     catch (error) {
         // Handle and send error response
         res.status(500).json({
             success: false,
-            message: error || 'Failed to retrieve products',
+            message: error.message || "Failed to retrieve products",
             error,
         });
     }

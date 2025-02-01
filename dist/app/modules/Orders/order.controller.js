@@ -12,49 +12,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderController = void 0;
 const order_service_1 = require("./order.service");
-const product_model_1 = require("../Products/product.model");
 // adding order to database
 const addingOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, product: productId, quantity, totalPrice } = req.body;
-    try {
-        // Check if the product exists and has sufficient stock
-        const product = yield product_model_1.productModel.findById(productId);
-        if (!product) {
-            throw new Error('Product not found');
-        }
-        if (product.quantity < quantity) {
-            res.status(400).json({
-                message: 'Insufficient stock available',
-                status: false,
-            });
-        }
-        // // Reduce product quantity and update inStock if necessary
-        product.quantity -= quantity;
-        if (product.quantity === 0) {
-            product.inStock = false;
-        }
-        yield product.save();
-        // // Create a new order
-        const newOrderDetails = {
-            email,
-            product: productId,
-            quantity,
-            totalPrice,
-        };
-        const newOrder = yield order_service_1.orderService.addOrderToDB(newOrderDetails);
-        res.status(201).json({
-            message: 'Order created successfully',
-            status: true,
-            data: newOrder,
-        });
-    }
-    catch (error) {
-        // handle and send error response
-        res.status(400).json({
-            success: false,
-            message: error,
-        });
-    }
+    const order = yield order_service_1.orderService.addOrderToDB(req.ip, req.body);
+    res.status(200).json({
+        message: 'Orders Placed successfully',
+        status: true,
+        data: order,
+    });
 });
 // getting orders from database
 const gettingOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -62,6 +27,25 @@ const gettingOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const orders = yield order_service_1.orderService.getOrders();
         res.status(200).json({
             message: 'Orders fetched successfully',
+            status: true,
+            data: orders,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching orders',
+            error,
+        });
+    }
+});
+// getting orders from database
+const gettingSingleOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orders = yield order_service_1.orderService.getOrderById(req.params.orderId);
+        res.status(200).json({
+            message: 'Order fetched successfully',
             status: true,
             data: orders,
         });
@@ -94,9 +78,109 @@ const calculatingRevenue = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 });
+// get single order
+const getSingleOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderId = req.params.orderId;
+        const order = yield order_service_1.orderService.getOrderById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+        res.status(200).json({
+            message: 'Order fetched successfully',
+            status: true,
+            data: order,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching order',
+            error,
+        });
+    }
+});
+// get orders by user id 
+const getOrdersByUserId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.userId;
+        const orders = yield order_service_1.orderService.getOrdersByUserId(userId);
+        res.status(200).json({
+            message: 'Orders fetched successfully',
+            status: true,
+            data: orders,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching orders',
+            error,
+        });
+    }
+});
+// update order status
+const updateOrderStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderId = req.params.orderId;
+        const newOrderStatus = req.body.orderStatus;
+        const order = yield order_service_1.orderService.updateOrderStatusInDB(orderId, newOrderStatus);
+        res.status(200).json({
+            message: 'Order status updated successfully',
+            status: true,
+            data: order,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error updating order status',
+            error,
+        });
+    }
+});
+// delete order 
+const deleteOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderId = req.params.orderId;
+        yield order_service_1.orderService.deleteOrderFromDB(orderId);
+        res.status(200).json({
+            message: 'Order deleted successfully',
+            status: true,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting order',
+            error,
+        });
+    }
+});
+const verifyPaymentControl = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const order = yield order_service_1.orderService.verifyPayment(req.query.sp_trxn_id);
+    res.status(200).json({
+        message: 'Payment verified successfully',
+        status: true,
+        data: order,
+    });
+});
 // sending to routes
 exports.orderController = {
     addingOrder,
     calculatingRevenue,
-    gettingOrders
+    gettingOrders,
+    getSingleOrder,
+    getOrdersByUserId,
+    updateOrderStatus,
+    deleteOrder,
+    gettingSingleOrder,
+    verifyPaymentControl
 };

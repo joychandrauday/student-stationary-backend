@@ -18,19 +18,47 @@ const addProductToDB = (product) => __awaiter(void 0, void 0, void 0, function* 
     console.log(result);
     return result;
 });
-const getAllProducts = () => __awaiter(void 0, void 0, void 0, function* () {
-    // Retrieve all products from the database
-    const products = yield product_model_1.productModel.find();
-    return products;
+// Assuming you're using Mongoose for MongoDB
+const getAllProducts = (filter, skip, limit, sort) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Fetch products based on filter, skip, and limit: Record<string, any>
+        const products = yield product_model_1.productModel.find(filter) // Apply filter
+            .skip(skip) // Skip the number of products based on pagination
+            .limit(limit) // Limit the number of products per page
+            .sort(sort) // Sort the results based on sort criteria
+            .exec(); // Execute the query
+        return products;
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            throw new Error("Error fetching products: " + error.message);
+        }
+        else {
+            throw new Error("Error fetching products: " + String(error));
+        }
+    }
+});
+const getTotalCount = (filter) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const totalCount = yield product_model_1.productModel.countDocuments(filter); // Count products based on the filter
+        return totalCount;
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            throw new Error("Error fetching products: " + error.message);
+        }
+        else {
+            throw new Error("Error fetching products: " + String(error));
+        }
+    }
 });
 const getSingleProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
     // Retrieve a single product from the database by ID
-    const product = yield product_model_1.productModel.findById(id);
+    const product = yield product_model_1.productModel.findById(id).populate('reviews.userId', 'name avatar');
     return product;
 });
 const updateProductInDB = (id, updatedProduct) => __awaiter(void 0, void 0, void 0, function* () {
     // Update a product in the database by ID
-    console.log(updatedProduct);
     const result = yield product_model_1.productModel.findByIdAndUpdate(id, updatedProduct, { new: true });
     return result;
 });
@@ -44,5 +72,6 @@ exports.productService = {
     getAllProducts,
     getSingleProduct,
     updateProductInDB,
-    deleteProductFromDB
+    deleteProductFromDB,
+    getTotalCount
 };
