@@ -72,7 +72,7 @@ Ensure the following are installed on your system:
 
 
     ```bash
-        npm run dev
+        npm run start:dev
     ```
 
 
@@ -80,18 +80,32 @@ Ensure the following are installed on your system:
 
 ### Product Management
 
-- **GET** `/api/products`: Retrieve all products.
-- **POST** `/api/products`: Add a new product.
-- **PATCH** `/api/products/:id`: Update an existing product.
-- **DELETE** `/api/products/:id`: Delete a product.
+- **GET** `/api/v1/products`: Retrieve all products.
+- **GET** `/api/v1/products/:productId`: Retrieve single product.
+- **POST** `/api/v1/products`: Add a new product.
+- **PATCH** `/api/v1/products/:productId`: Update an existing product.
+- **DELETE** `/api/v1/products/:productId`: Delete a product.
 
 ### Order Management
 
-- **POST** `/api/orders`: Create a new order.
-- **GET** `/api/orders/:id`: Retrieve an order.
-### Total Revenue
+- **POST** `/api/v1/orders`: Create a new order.
+- **GET** `/api/v1/orders`: Fetch all orders.
+- **GET** `/api/v1/orders/single/:orderId`: Retrieve an order By Order Id.
+- **GET** `/api/v1/orders/:userId`: Retrieve an user orders.
+- **PATCH** `/api/v1/orders/update/:orderId`: Update a order by ID.
+- **GET** `/api/v1/orders/verify/payment`: Verify Payment.
+- **delete** `/api/v1/orders/:orderId`: Delete an order by ID.
 
-- **GET** `/api/orders/revenue`: Retrieve an order.
+### User Management
+- **POST** `/api/v1/users/register`: Registering new user.
+- **POST** `/api/v1/users/login`: log in a user.
+- **GET** `/api/v1/users`: Fetch all users.
+- **GET** `/api/v1/users/:id`: Retrieve an User By email.
+- **GET** `/api/v1/users/single/:id`: Retrieve an user users by ID.
+- **PATCH** `/api/v1/users/update/:orderId`: Update a order by ID.
+- **GET** `/api/v1/users/verify/payment`: Verify Payment.
+- **DELETE** `/api/v1/users/:id`: Delete an User by ID.
+- **PATCH** `/api/v1/users/:id`: Update an User by ID.
 
 ## Project Structure
 
