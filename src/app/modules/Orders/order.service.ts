@@ -69,7 +69,12 @@ const getSingleOrderById = async (id: string) => {
   const order = await orderModel.findById(id)
   return order
 }
+// update order by orderId
 
+const updateOrderInDB = async (orderId: string, newOrder: IOrder) => {
+  const result = await orderModel.findByIdAndUpdate(orderId, newOrder, { new: true })
+  return result
+}
 // update order status 
 
 const updateOrderStatusInDB = async (orderId: string, newStatus: string) => {
@@ -143,7 +148,7 @@ export const orderService = {
   getOrderById,
   updateOrderStatusInDB,
   // updateEstimatedDeliveryDateInDB,
-  // updateOrderInDB,
+  updateOrderInDB,
   deleteOrderFromDB,
   verifyPayment,
   getSingleOrderById

@@ -13,6 +13,7 @@ router.get('/', order_controller_1.orderController.gettingOrders); // getting or
 router.get('/single/:orderId', order_controller_1.orderController.gettingSingleOrder); // getting orders
 router.get('/:userId', order_controller_1.orderController.getOrdersByUserId); // getting orders
 router.patch('/:orderId', order_controller_1.orderController.updateOrderStatus); // getting orders
+router.patch('/update/:orderId', order_controller_1.orderController.updateOrderById); // getting orders
 router.get('/verify/payment', order_controller_1.orderController.verifyPaymentControl); // calculating revenue
 router.delete('/:orderId', order_controller_1.orderController.deleteOrder); // calculating revenue
 router.get('/revenue', order_controller_1.orderController.calculatingRevenue); // calculating revenue

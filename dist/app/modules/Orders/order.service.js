@@ -60,6 +60,11 @@ const getSingleOrderById = (id) => __awaiter(void 0, void 0, void 0, function* (
     const order = yield order_model_1.orderModel.findById(id);
     return order;
 });
+// update order by orderId
+const updateOrderInDB = (orderId, newOrder) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield order_model_1.orderModel.findByIdAndUpdate(orderId, newOrder, { new: true });
+    return result;
+});
 // update order status 
 const updateOrderStatusInDB = (orderId, newStatus) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield order_model_1.orderModel.findByIdAndUpdate(orderId, { orderStatus: newStatus }, { new: true });
@@ -111,7 +116,7 @@ exports.orderService = {
     getOrderById,
     updateOrderStatusInDB,
     // updateEstimatedDeliveryDateInDB,
-    // updateOrderInDB,
+    updateOrderInDB,
     deleteOrderFromDB,
     verifyPayment,
     getSingleOrderById

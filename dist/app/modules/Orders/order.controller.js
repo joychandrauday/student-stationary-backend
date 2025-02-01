@@ -124,6 +124,27 @@ const getOrdersByUserId = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
     }
 });
+// update order by id
+const updateOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderId = req.params.orderId;
+        const updatedOrder = req.body;
+        const order = yield order_service_1.orderService.updateOrderInDB(orderId, updatedOrder);
+        res.status(200).json({
+            message: 'Order updated successfully',
+            status: true,
+            data: order,
+        });
+    }
+    catch (error) {
+        // handle and send error response
+        res.status(500).json({
+            success: false,
+            message: 'Error updating order',
+            error,
+        });
+    }
+});
 // update order status
 const updateOrderStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -182,5 +203,6 @@ exports.orderController = {
     updateOrderStatus,
     deleteOrder,
     gettingSingleOrder,
+    updateOrderById,
     verifyPaymentControl
 };

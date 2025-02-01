@@ -117,7 +117,27 @@ const getOrdersByUserId = async (req: Request, res: Response) => {
   }
 }
 
+// update order by id
 
+const updateOrderById = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.orderId
+    const updatedOrder = req.body
+    const order = await orderService.updateOrderInDB(orderId, updatedOrder)
+    res.status(200).json({
+      message: 'Order updated successfully',
+      status: true,
+      data: order,
+    })
+  } catch (error) {
+    // handle and send error response
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order',
+      error,
+    })
+  }
+}
 
 // update order status
 
@@ -186,5 +206,6 @@ export const orderController = {
   updateOrderStatus,
   deleteOrder,
   gettingSingleOrder,
+  updateOrderById,
   verifyPaymentControl
 }
