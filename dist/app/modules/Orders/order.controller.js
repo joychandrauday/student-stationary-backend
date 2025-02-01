@@ -24,7 +24,9 @@ const addingOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 // getting orders from database
 const gettingOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const orders = yield order_service_1.orderService.getOrders();
+        const { startDate, endDate } = req.query;
+        console.log(req.query, 'hell');
+        const orders = yield order_service_1.orderService.getOrders(startDate, endDate);
         res.status(200).json({
             message: 'Orders fetched successfully',
             status: true,

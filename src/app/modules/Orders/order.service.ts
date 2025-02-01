@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // 4.service
 
 import { userService } from '../Users/user.service';
@@ -48,8 +49,20 @@ const addOrderToDB = async (
 };
 
 // get all orders
-const getOrders = async () => {
-  const orders = await orderModel.find().populate('user', 'name email').populate('products.productId', 'name price featuredImages')
+const getOrders = async (startDate?: string, endDate?: string) => {
+  const filter: any = {};
+
+  if (startDate && endDate) {
+    filter.orderDate = {
+      $gte: new Date(startDate), // বড় বা সমান
+      $lte: new Date(endDate),   // ছোট বা সমান
+    };
+  }
+
+  const orders = await orderModel
+    .find(filter)
+    .populate('user', 'name email')
+    .populate('products.productId', 'name price featuredImages');
   return orders
 }
 // get single order

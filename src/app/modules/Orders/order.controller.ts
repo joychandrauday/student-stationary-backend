@@ -19,7 +19,9 @@ const addingOrder = async (req: Request, res: Response) => {
 // getting orders from database
 const gettingOrders = async (req: Request, res: Response) => {
   try {
-    const orders = await orderService.getOrders()
+    const { startDate, endDate } = req.query;
+    console.log(req.query, 'hell');
+    const orders = await orderService.getOrders(startDate as string, endDate as string);
     res.status(200).json({
       message: 'Orders fetched successfully',
       status: true,
