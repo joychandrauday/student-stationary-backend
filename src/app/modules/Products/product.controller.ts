@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express'
 import { productService } from './product.service'
 
@@ -6,10 +7,8 @@ import { productService } from './product.service'
 const addingProduct = async (req: Request, res: Response) => {
   try {
     // Add product to the database
-    console.log(req.body)
     const product = req.body
     const newProduct = await productService.addProductToDB(product)
-    console.log(newProduct);
     // Send success response
     res.status(201).json({
       message: 'Product added successfully',
@@ -17,7 +16,6 @@ const addingProduct = async (req: Request, res: Response) => {
       data: newProduct,
     })
   } catch (error) {
-    console.log(error);
     // Handle and send error response
     res.status(400).json({
       success: false,
@@ -31,7 +29,6 @@ const addingProduct = async (req: Request, res: Response) => {
 
 const gettingProducts = async (req: Request, res: Response) => {
   try {
-    console.log(req.query);
     const {
       name,
       brand,
@@ -146,7 +143,6 @@ const updatingProduct = async (req: Request, res: Response) => {
   try {
     // Update product in the database by id
     const id = req.params.productId
-    console.log(id);
     const updatedProduct = req.body
     const updatedProductData = await productService.updateProductInDB(id, updatedProduct)
 

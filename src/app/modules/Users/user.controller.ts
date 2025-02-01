@@ -34,7 +34,6 @@ const registeringUser = async (req: Request, res: Response) => {
       cart: []
     };
     const user = await userService.registeringUserService(newUser);
-    console.log(user, 'controller');
     sendResponse(res, {
       statusCode: 201,
       success: true,
@@ -47,7 +46,6 @@ const registeringUser = async (req: Request, res: Response) => {
 }
 // log in user
 const loginUser = async (req: Request, res: Response) => {
-  console.log(req.body);
   const user = await userService.getSingleUser(req?.body?.email);
   if (!user) {
     sendResponse(res, {
@@ -103,7 +101,6 @@ const gettingUsers = async (req: Request, res: Response, next: NextFunction) => 
   try {
     // Save the new user to the database
     const user = await userService.getUsers();
-    console.log(user);
 
     // Send success response
     sendResponse(res, {

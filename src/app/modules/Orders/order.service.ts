@@ -18,8 +18,6 @@ const addOrderToDB = async (
   client_ip: string,
   newOrder: newOrder
 ) => {
-
-  console.log(newOrder);
   const user = await userService.getSingleUserById(newOrder.user)
   let order = await orderModel.create(newOrder);
 

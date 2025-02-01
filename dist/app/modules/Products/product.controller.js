@@ -15,10 +15,8 @@ const product_service_1 = require("./product.service");
 const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Add product to the database
-        console.log(req.body);
         const product = req.body;
         const newProduct = yield product_service_1.productService.addProductToDB(product);
-        console.log(newProduct);
         // Send success response
         res.status(201).json({
             message: 'Product added successfully',
@@ -27,7 +25,6 @@ const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (error) {
-        console.log(error);
         // Handle and send error response
         res.status(400).json({
             success: false,
@@ -39,7 +36,6 @@ const addingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 // 2. getting all products from database
 const gettingProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.query);
         const { name, brand, category, inStock, status, minQuantity, maxQuantity, minPrice, maxPrice, minRating, maxRating, page, // Default to page 1 if not provided
         perPage, // Default to 10 products per page if not provided
         sortBy, sortOrder = "asc", // Default to ascending order
@@ -137,7 +133,6 @@ const updatingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         // Update product in the database by id
         const id = req.params.productId;
-        console.log(id);
         const updatedProduct = req.body;
         const updatedProductData = yield product_service_1.productService.updateProductInDB(id, updatedProduct);
         // Send success response

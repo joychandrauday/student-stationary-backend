@@ -15,7 +15,6 @@ const product_model_1 = require("./product.model");
 const addProductToDB = (product) => __awaiter(void 0, void 0, void 0, function* () {
     // Push new product to the database
     const result = yield product_model_1.productModel.create(product);
-    console.log(result);
     return result;
 });
 // Assuming you're using Mongoose for MongoDB

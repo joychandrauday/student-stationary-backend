@@ -63,7 +63,6 @@ const createPayment = async (req: Request, res: Response) => {
 // ✅ Handle successful payment
 const successPayment = async (req: Request, res: Response) => {
   try {
-    console.log('Payment Success:', req.body);
     res.status(200).json({
       message: 'Payment successful',
       status: true,
@@ -81,7 +80,6 @@ const successPayment = async (req: Request, res: Response) => {
 // ✅ Handle failed payment
 const failPayment = async (req: Request, res: Response) => {
   try {
-    console.log('Payment Failed:', req.body);
     res.status(400).json({
       success: false,
       message: 'Payment failed',
@@ -99,7 +97,6 @@ const failPayment = async (req: Request, res: Response) => {
 // ✅ Handle canceled payment
 const cancelPayment = async (req: Request, res: Response) => {
   try {
-    console.log('Payment Canceled:', req.body);
     res.status(200).json({
       message: 'Payment canceled successfully',
       status: true,

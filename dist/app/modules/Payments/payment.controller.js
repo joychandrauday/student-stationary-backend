@@ -70,7 +70,6 @@ const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 // ✅ Handle successful payment
 const successPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Payment Success:', req.body);
         res.status(200).json({
             message: 'Payment successful',
             status: true,
@@ -88,7 +87,6 @@ const successPayment = (req, res) => __awaiter(void 0, void 0, void 0, function*
 // ✅ Handle failed payment
 const failPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Payment Failed:', req.body);
         res.status(400).json({
             success: false,
             message: 'Payment failed',
@@ -106,7 +104,6 @@ const failPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 // ✅ Handle canceled payment
 const cancelPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('Payment Canceled:', req.body);
         res.status(200).json({
             message: 'Payment canceled successfully',
             status: true,

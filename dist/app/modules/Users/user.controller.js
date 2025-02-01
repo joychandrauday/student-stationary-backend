@@ -42,7 +42,6 @@ const registeringUser = (req, res) => __awaiter(void 0, void 0, void 0, function
             cart: []
         };
         const user = yield user_service_1.userService.registeringUserService(newUser);
-        console.log(user, 'controller');
         (0, sendResponse_1.default)(res, {
             statusCode: 201,
             success: true,
@@ -57,7 +56,6 @@ const registeringUser = (req, res) => __awaiter(void 0, void 0, void 0, function
 // log in user
 const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    console.log(req.body);
     const user = yield user_service_1.userService.getSingleUser((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.email);
     if (!user) {
         (0, sendResponse_1.default)(res, {
@@ -107,7 +105,6 @@ const gettingUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     try {
         // Save the new user to the database
         const user = yield user_service_1.userService.getUsers();
-        console.log(user);
         // Send success response
         (0, sendResponse_1.default)(res, {
             statusCode: 201,

@@ -17,7 +17,6 @@ const order_model_1 = require("./order.model");
 const order_utils_1 = require("./order.utils");
 // create a new order
 const addOrderToDB = (client_ip, newOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(newOrder);
     const user = yield user_service_1.userService.getSingleUserById(newOrder.user);
     let order = yield order_model_1.orderModel.create(newOrder);
     const paymentDetails = {
