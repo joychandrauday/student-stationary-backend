@@ -48,6 +48,8 @@ const gettingProducts = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (brand)
             filter.brand = { $regex: new RegExp(brand, "i") }; // Case-insensitive brand search
         if (category)
+            filter.category = { $regex: new RegExp(category, "i") }; // Case-insensitive brand search
+        if (category)
             filter.category = category;
         if (inStock)
             filter.inStock = inStock === "true"; // Convert string to boolean

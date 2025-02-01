@@ -53,6 +53,7 @@ const gettingProducts = async (req: Request, res: Response) => {
     // Add filters based on query parameters
     if (name) filter.name = { $regex: new RegExp(name as string, "i") }; // Case-insensitive name search
     if (brand) filter.brand = { $regex: new RegExp(brand as string, "i") }; // Case-insensitive brand search
+    if (category) filter.category = { $regex: new RegExp(category as string, "i") }; // Case-insensitive brand search
     if (category) filter.category = category;
     if (inStock) filter.inStock = inStock === "true"; // Convert string to boolean
     if (status) {
