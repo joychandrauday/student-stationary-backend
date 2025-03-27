@@ -8,6 +8,7 @@ import httpStatus from 'http-status';
 import bcrypt from 'bcrypt';
 import config from "../../config";
 import { createToken, verifyToken } from "../Utils/auth.utils";
+import { SignOptions } from "jsonwebtoken";
 
 export type TLoginUser = {
   email: string;
@@ -39,23 +40,32 @@ const loginUser = async (payload: TLoginUser) => {
   const jwtPayload = {
     email: user.email,
     role: user.role,
+    id: user._id,
+    avatar: user.avatar,
+    name: user.name,
   };
-
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
-    parseInt(config.jwt_access_expires_in as string, 10),
+    config.jwt_access_expires_in as SignOptions["expiresIn"]
   );
 
   const refreshToken = createToken(
     jwtPayload,
     config.jwt_refresh_secret as string,
-    parseInt(config.jwt_refresh_expires_in as string, 10),
+    config.jwt_refresh_expires_in as SignOptions["expiresIn"]
   );
-
+  console.log(accessToken);
   return {
     accessToken,
     refreshToken,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+    }
   };
 };
 
@@ -89,7 +99,6 @@ const refreshToken = async (token: string) => {
     config.jwt_access_secret as string,
     parseInt(config.jwt_access_expires_in as string, 10),
   );
-
   return {
     accessToken,
   };
@@ -124,7 +133,6 @@ const getSingleUserById = async (identifier: string) => {
   if (!identifier) {
     throw new Error('No identifier provided')
   }
-
   // Populate 'cart' with 'name' and 'price' fields from the Product model
   const user = await userModel.findById(identifier)
     .populate('cart.productId', 'name price featuredImages quantity'); // You can specify more fields if necessary

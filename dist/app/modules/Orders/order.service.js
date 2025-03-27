@@ -12,6 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderService = void 0;
+const product_model_1 = require("../Products/product.model");
 const user_service_1 = require("../Users/user.service");
 const order_model_1 = require("./order.model");
 const order_utils_1 = require("./order.utils");
@@ -58,7 +59,7 @@ const getOrders = (startDate, endDate) => __awaiter(void 0, void 0, void 0, func
 });
 // get single order
 const getOrderById = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const order = yield order_model_1.orderModel.findById(orderId).populate('user', 'name,email');
+    const order = yield order_model_1.orderModel.findById(orderId).populate('user', 'name,email').populate('products.productId');
     return order;
 });
 // get order by userId
@@ -67,7 +68,7 @@ const getOrdersByUserId = (userId) => __awaiter(void 0, void 0, void 0, function
     return orders;
 });
 const getSingleOrderById = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const order = yield order_model_1.orderModel.findById(id);
+    const order = yield order_model_1.orderModel.findById(id).populate('products.productId').populate('user', 'name,email');
     return order;
 });
 // update order by orderId
@@ -98,22 +99,42 @@ const calculateRevenueService = () => __awaiter(void 0, void 0, void 0, function
     return revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
 });
 const verifyPayment = (sp_trxn_id) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(sp_trxn_id);
     const verifiedResponse = yield order_utils_1.orderUtils.verifyPayment(sp_trxn_id);
+    console.log(verifiedResponse);
     if (verifiedResponse.length) {
-        const res = yield order_model_1.orderModel.findOneAndUpdate({ "transaction.id": sp_trxn_id }, {
+        const updatedOrder = yield order_model_1.orderModel.findOneAndUpdate({ "transaction.id": sp_trxn_id }, {
             "transaction.code": verifiedResponse[0].sp_code,
             "transaction.message": verifiedResponse[0].sp_message,
             "transaction.status": verifiedResponse[0].transaction_status,
             "transaction.method": verifiedResponse[0].method,
             "transaction.bank_status": verifiedResponse[0].bank_status,
             "transaction.date_time": verifiedResponse[0].date_time,
-            'paymentStatus': verifiedResponse[0].bank_status == "Success"
+            'paymentStatus': verifiedResponse[0].bank_status === "Success"
                 ? "Paid"
-                : verifiedResponse[0].bank_status == "Cancel"
+                : verifiedResponse[0].bank_status === "Cancel"
                     ? "Cancelled"
                     : "Pending",
-        });
-        console.log(res);
+            'orderStatus': verifiedResponse[0].bank_status === "Success"
+                ? "Processing"
+                : verifiedResponse[0].bank_status === "Cancel"
+                    ? "Cancelled"
+                    : "Pending",
+        }, { new: true }).populate('products.productId'); // Populate to get product details
+        if (updatedOrder && verifiedResponse[0].bank_status === "Success") {
+            for (const product of updatedOrder.products) {
+                // Reduce the product quantity and update status if it reaches 0
+                const updatedProduct = yield product_model_1.productModel.findByIdAndUpdate(product.productId._id, {
+                    $inc: { quantity: -product.quantity }, // Reduce stock
+                }, { new: true });
+                console.log(updatedProduct);
+                // If quantity is 0, set status to "sold"
+                if (updatedProduct && updatedProduct.quantity <= 0) {
+                    yield product_model_1.productModel.findByIdAndUpdate(product.productId._id, { $set: { inStock: false } }, // Update status
+                    { new: true });
+                }
+            }
+        }
     }
     return verifiedResponse;
 });

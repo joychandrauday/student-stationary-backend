@@ -17,6 +17,9 @@
 // images: { type: [String], required: true },
 // featuredImages: { type: String, required: true },
 // quantity: { type: Number, required: true },
+
+import { Types } from "mongoose";
+
 // inStock: { type: Boolean, required: true, default: true },
 export interface IReview {
     userId: string;
@@ -29,15 +32,17 @@ export interface IProduct {
     description: string;
     rating?: number;
     discount?: number;
-    brand: string;
+    brand: Types.ObjectId;
     price: number;
-    category: 'Writing' | 'Office' | 'Art' | 'Educational' | 'Technology' | 'Others';
+    category: Types.ObjectId;
     images: string[];
     featuredImages: string;
     quantity: number;
     inStock: boolean;
     status: 'sale' | 'featured' | 'hot'
     reviews?: IReview[];
+    offerPrice?: number;
+    calculateOfferPrice(): Promise<number | null>;
 }
 
 

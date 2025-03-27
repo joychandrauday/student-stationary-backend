@@ -1,59 +1,60 @@
-// 1. Sending requests to db from client
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
-import cookieParser from "cookie-parser";
+import cookieParser from 'cookie-parser';
 import { productRoutes } from './app/modules/Products/product.routes';
 import { orderRoutes } from './app/modules/Orders/order.routes';
 import { userRoutes } from './app/modules/Users/user.routes';
 import { paymentRoutes } from './app/modules/Payments/payment.routes';
-
+import { categoryRouter } from './app/modules/category/category.routes';
+import { FlashSaleRoutes } from './app/modules/flashSell/flashSale.routes';
+import { brandRoutes } from './app/modules/brand/brand.routes';
 
 const app: Application = express();
 
-// Middleware
-// app.use(express.json());
-// const allowedOrigins = [
-//   'https://student-stationary-frontend.vercel.app',
-//   'http://localhost:5173',
-//   'http://localhost:5174',
-//   'http://localhost:5175',
-// ];
+// Middleware setup
+app.use(express.json()); // To parse incoming JSON requests
+app.use(cookieParser()); // To parse cookies from incoming requests
 
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         return callback(null, true);
-//       }
-//       return callback(new Error('Not allowed by CORS'));
-//     },
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-//     credentials: true,
-//   })
-// );
-// app.options('*', cors())
-// app.use(bodyParser.json());
-//parsers
-app.use(express.json());
-app.use(cookieParser());
+// CORS setup to allow requests from specific domains
+const allowedOrigins = [
+  "http://localhost:5173", // Local frontend
+  "https://student-stationary-frontend.vercel.app", // Production frontend
+];
 
-app.use(cors({ origin: ["http://localhost:5173", "https://student-stationary-frontend.vercel.app"], credentials: true }));
-
+app.use(cors({
+  origin: (origin, callback) => {
+    // Check if the origin is in the allowed list
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Reject if origin is not allowed
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'], // Allowed headers
+  credentials: true, // Allow credentials like cookies or authorization headers
+}));
 
 // Default route
 app.get('/api/v1/', (req: Request, res: Response) => {
-  res.send('Hello World frpm stationary backend!!!');
+  res.send('Hello World from Stationary Backend!!!');
 });
 
-//appllication routes
-app.use('/api/v1/users', userRoutes) // product routes
-app.use('/api/v1/products', productRoutes) // product routes
-app.use('/api/v1/orders', orderRoutes) // order routes
-app.use('/api/v1/payment', paymentRoutes) // order routes
+// Application routes
+app.use('/api/v1/users', userRoutes); // User routes
+app.use('/api/v1/products', productRoutes); // Product routes
+app.use('/api/v1/orders', orderRoutes); // Order routes
+app.use('/api/v1/payment', paymentRoutes); // Payment routes
+app.use('/api/v1/category', categoryRouter); // Category routes
+app.use('/api/v1/flash-sale', FlashSaleRoutes); // Flash Sale routes
+app.use('/api/v1/brand', brandRoutes); // Brand routes
 
-
-
+// Global error handler
+app.use((err: Error, req: Request, res: Response, next: any) => {
+  console.error("Global error:", err); // Log the error to the console
+  res.status(500).json({ error: 'Internal Server Error' }); // Send generic error message
+  next()
+});
 
 export default app;

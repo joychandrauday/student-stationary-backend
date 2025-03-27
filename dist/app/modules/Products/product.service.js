@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // 4. Service
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -18,15 +19,73 @@ const addProductToDB = (product) => __awaiter(void 0, void 0, void 0, function* 
     return result;
 });
 // Assuming you're using Mongoose for MongoDB
-const getAllProducts = (filter, skip, limit, sort) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllProducts = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Fetch products based on filter, skip, and limit: Record<string, any>
-        const products = yield product_model_1.productModel.find(filter) // Apply filter
-            .skip(skip) // Skip the number of products based on pagination
-            .limit(limit) // Limit the number of products per page
-            .sort(sort) // Sort the results based on sort criteria
-            .exec(); // Execute the query
-        return products;
+        const { name, brand, category, description, inStock, status, minQuantity, maxQuantity, minPrice, maxPrice, minRating, maxRating, page = "1", // Default page 1
+        perPage = "10", // Default perPage 10
+        sortBy, sortOrder = "asc", // Default ascending order
+         } = query;
+        // Create a filter object
+        const filter = {};
+        // Add filters based on query parameters
+        if (name)
+            filter.name = { $regex: new RegExp(name, "i") };
+        if (description)
+            filter.description = { $regex: new RegExp(description, "i") };
+        if (category)
+            filter.category = category;
+        if (brand)
+            filter.brand = brand;
+        if (inStock)
+            filter.inStock = inStock === "true";
+        if (status) {
+            const validStatuses = ["hot", "sale", "featured"];
+            if (validStatuses.includes(status)) {
+                filter.status = status;
+            }
+        }
+        if (minQuantity)
+            filter.quantity = Object.assign(Object.assign({}, filter.quantity), { $gte: parseInt(minQuantity) });
+        if (maxQuantity)
+            filter.quantity = Object.assign(Object.assign({}, filter.quantity), { $lte: parseInt(maxQuantity) });
+        if (minPrice)
+            filter.price = Object.assign(Object.assign({}, filter.price), { $gte: parseFloat(minPrice) });
+        if (maxPrice)
+            filter.price = Object.assign(Object.assign({}, filter.price), { $lte: parseFloat(maxPrice) });
+        if (minRating)
+            filter.rating = Object.assign(Object.assign({}, filter.rating), { $gte: parseFloat(minRating) });
+        if (maxRating)
+            filter.rating = Object.assign(Object.assign({}, filter.rating), { $lte: parseFloat(maxRating) });
+        // Pagination: Calculate skip and limit values
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(perPage);
+        const skip = (pageNumber - 1) * limitNumber;
+        // Sorting: Build sort object
+        const sort = {};
+        if (sortBy) {
+            sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+        }
+        // Fetch total count of products
+        const totalCount = yield product_model_1.productModel.countDocuments(filter);
+        // Fetch filtered products with pagination and sorting
+        const products = yield product_model_1.productModel.find(filter)
+            .populate("category")
+            .populate("brand")
+            .populate("reviews.userId", "-cart -password -paymentMethods")
+            .skip(skip)
+            .limit(limitNumber)
+            .sort(sort)
+            .exec();
+        // Calculate total pages
+        const totalPages = Math.ceil(totalCount / limitNumber);
+        // Create meta data
+        const meta = {
+            totalCount,
+            totalPages,
+            currentPage: pageNumber,
+            perPage: limitNumber,
+        };
+        return { products, meta };
     }
     catch (error) {
         if (error instanceof Error) {
@@ -52,7 +111,7 @@ const getTotalCount = (filter) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 const getSingleProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    // Retrieve a single product from the database by ID
+    console.log(id);
     const product = yield product_model_1.productModel.findById(id).populate('reviews.userId', 'name avatar');
     return product;
 });

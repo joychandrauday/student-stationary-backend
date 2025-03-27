@@ -42,12 +42,23 @@ const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const jwtPayload = {
         email: user.email,
         role: user.role,
+        id: user._id,
+        avatar: user.avatar,
+        name: user.name,
     };
-    const accessToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwt_access_secret, parseInt(config_1.default.jwt_access_expires_in, 10));
-    const refreshToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwt_refresh_secret, parseInt(config_1.default.jwt_refresh_expires_in, 10));
+    const accessToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwt_access_secret, config_1.default.jwt_access_expires_in);
+    const refreshToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwt_refresh_secret, config_1.default.jwt_refresh_expires_in);
+    console.log(accessToken);
     return {
         accessToken,
         refreshToken,
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+        }
     };
 });
 // refresh token 

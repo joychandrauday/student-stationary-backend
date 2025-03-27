@@ -7,6 +7,8 @@ import { errorHandler } from "../Error/globalErrorHandler";
 import sendResponse from "../Utils/sendResponse";
 import httpStatus from 'http-status';
 import { userService } from "./user.service";
+import { StatusCodes } from "http-status-codes";
+import catchAsync from "../Utils/catchAsync";
 
 
 
@@ -45,44 +47,31 @@ const registeringUser = async (req: Request, res: Response) => {
   }
 }
 // log in user
-const loginUser = async (req: Request, res: Response) => {
-  const user = await userService.getSingleUser(req?.body?.email);
-  if (!user) {
+const loginUser = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
     sendResponse(res, {
-      statusCode: 404,
-      success: false,
-      message: 'User not Found!',
-      data: null,
+      statusCode: StatusCodes.BAD_REQUEST,
+      success: true,
+      message: "Provide Proper credentials!",
+      data: {},
     });
+    return;
   }
-  const result = await userService.loginUser(req.body);
-  if (!result) {
-    return sendResponse(res, {
-      statusCode: 500,
-      success: false,
-      message: 'Login failed!',
-      data: null,
-    });
-  }
-  const { refreshToken, accessToken } = result;
 
-  res.cookie('refreshToken', refreshToken, {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'none',
-    maxAge: 1000 * 60 * 60 * 24 * 365,
-  });
-
+  const result = await userService.loginUser({ email, password });
+  const { accessToken, refreshToken, user } = result;
   sendResponse(res, {
-    statusCode: 201,
+    statusCode: StatusCodes.OK,
     success: true,
-    message: 'User is logged in succesfully!',
+    message: "User logged in successfully!",
     data: {
       accessToken,
+      refreshToken,
+      user
     },
   });
-};
-
+});
 const refreshToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
   const result = await userService.refreshToken(refreshToken);
@@ -117,6 +106,16 @@ const gettingUsers = async (req: Request, res: Response, next: NextFunction) => 
 const gettingSingleUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.params.id;
+    if (!userId) {
+      sendResponse(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        success: true,
+        message: "Provide userId!",
+        data: {},
+      });
+      return;
+    }
+
     const user = await userService.getSingleUser(userId)
 
     // Send success response

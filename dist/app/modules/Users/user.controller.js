@@ -18,6 +18,8 @@ const globalErrorHandler_1 = require("../Error/globalErrorHandler");
 const sendResponse_1 = __importDefault(require("../Utils/sendResponse"));
 const http_status_1 = __importDefault(require("http-status"));
 const user_service_1 = require("./user.service");
+const http_status_codes_1 = require("http-status-codes");
+const catchAsync_1 = __importDefault(require("../Utils/catchAsync"));
 // registering user by hashed password use userService
 const registeringUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
@@ -54,42 +56,30 @@ const registeringUser = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 // log in user
-const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const user = yield user_service_1.userService.getSingleUser((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.email);
-    if (!user) {
+const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, password } = req.body;
+    if (!email || !password) {
         (0, sendResponse_1.default)(res, {
-            statusCode: 404,
-            success: false,
-            message: 'User not Found!',
-            data: null,
+            statusCode: http_status_codes_1.StatusCodes.BAD_REQUEST,
+            success: true,
+            message: "Provide Proper credentials!",
+            data: {},
         });
+        return;
     }
-    const result = yield user_service_1.userService.loginUser(req.body);
-    if (!result) {
-        return (0, sendResponse_1.default)(res, {
-            statusCode: 500,
-            success: false,
-            message: 'Login failed!',
-            data: null,
-        });
-    }
-    const { refreshToken, accessToken } = result;
-    res.cookie('refreshToken', refreshToken, {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: 'none',
-        maxAge: 1000 * 60 * 60 * 24 * 365,
-    });
+    const result = yield user_service_1.userService.loginUser({ email, password });
+    const { accessToken, refreshToken, user } = result;
     (0, sendResponse_1.default)(res, {
-        statusCode: 201,
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
-        message: 'User is logged in succesfully!',
+        message: "User logged in successfully!",
         data: {
             accessToken,
+            refreshToken,
+            user
         },
     });
-});
+}));
 const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { refreshToken } = req.cookies;
     const result = yield user_service_1.userService.refreshToken(refreshToken);
@@ -121,6 +111,15 @@ const gettingUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 const gettingSingleUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.params.id;
+        if (!userId) {
+            (0, sendResponse_1.default)(res, {
+                statusCode: http_status_codes_1.StatusCodes.BAD_REQUEST,
+                success: true,
+                message: "Provide userId!",
+                data: {},
+            });
+            return;
+        }
         const user = yield user_service_1.userService.getSingleUser(userId);
         // Send success response
         res.status(200).json({

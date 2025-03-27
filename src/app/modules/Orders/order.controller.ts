@@ -185,6 +185,7 @@ const deleteOrder = async (req: Request, res: Response) => {
 }
 
 const verifyPaymentControl = async (req: Request, res: Response) => {
+  console.log(req.query);
   const order = await orderService.verifyPayment(
     req.query.sp_trxn_id as string
   );

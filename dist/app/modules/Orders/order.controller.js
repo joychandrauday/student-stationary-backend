@@ -187,6 +187,7 @@ const deleteOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 const verifyPaymentControl = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.query);
     const order = yield order_service_1.orderService.verifyPayment(req.query.sp_trxn_id);
     res.status(200).json({
         message: 'Payment verified successfully',

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // 4.service
 
+import { productModel } from '../Products/product.model';
 import { userService } from '../Users/user.service';
 import { IOrder } from './order.interface'
 import { orderModel } from './order.model'
@@ -66,7 +67,7 @@ const getOrders = async (startDate?: string, endDate?: string) => {
 // get single order
 
 const getOrderById = async (orderId: string) => {
-  const order = await orderModel.findById(orderId).populate('user', 'name,email')
+  const order = await orderModel.findById(orderId).populate('user', 'name,email').populate('products.productId')
   return order
 }
 
@@ -77,7 +78,7 @@ const getOrdersByUserId = async (userId: string) => {
   return orders
 }
 const getSingleOrderById = async (id: string) => {
-  const order = await orderModel.findById(id)
+  const order = await orderModel.findById(id).populate('products.productId').populate('user', 'name,email')
   return order
 }
 // update order by orderId
@@ -118,10 +119,11 @@ const calculateRevenueService = async () => {
 
 
 const verifyPayment = async (sp_trxn_id: string) => {
+  console.log(sp_trxn_id);
   const verifiedResponse = await orderUtils.verifyPayment(sp_trxn_id);
-
+  console.log(verifiedResponse);
   if (verifiedResponse.length) {
-    const res = await orderModel.findOneAndUpdate(
+    const updatedOrder = await orderModel.findOneAndUpdate(
       { "transaction.id": sp_trxn_id },
       {
         "transaction.code": verifiedResponse[0].sp_code,
@@ -131,21 +133,41 @@ const verifyPayment = async (sp_trxn_id: string) => {
         "transaction.bank_status": verifiedResponse[0].bank_status,
         "transaction.date_time": verifiedResponse[0].date_time,
         'paymentStatus':
-          verifiedResponse[0].bank_status == "Success"
+          verifiedResponse[0].bank_status === "Success"
             ? "Paid"
-            : verifiedResponse[0].bank_status == "Cancel"
+            : verifiedResponse[0].bank_status === "Cancel"
               ? "Cancelled"
               : "Pending",
+        'orderStatus': verifiedResponse[0].bank_status === "Success"
+          ? "Processing"
+          : verifiedResponse[0].bank_status === "Cancel"
+            ? "Cancelled"
+            : "Pending",
       },
-      // {
-      //   'paymentStatus': verifiedResponse[0].bank_status == "Success"
-      //     ? "Paid"
-      //     : verifiedResponse[0].bank_status == "Cancel"
-      //       ? "Cancelled"
-      //       : "Pending",
-      // }
-    );
-    console.log(res);
+      { new: true }
+    ).populate('products.productId'); // Populate to get product details
+
+    if (updatedOrder && verifiedResponse[0].bank_status === "Success") {
+      for (const product of updatedOrder.products) {
+        // Reduce the product quantity and update status if it reaches 0
+        const updatedProduct = await productModel.findByIdAndUpdate(
+          product.productId._id,
+          {
+            $inc: { quantity: -product.quantity }, // Reduce stock
+          },
+          { new: true }
+        );
+        console.log(updatedProduct);
+        // If quantity is 0, set status to "sold"
+        if (updatedProduct && updatedProduct.quantity <= 0) {
+          await productModel.findByIdAndUpdate(
+            product.productId._id,
+            { $set: { inStock: false } }, // Update status
+            { new: true }
+          );
+        }
+      }
+    }
   }
   return verifiedResponse;
 };
