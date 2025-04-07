@@ -9,6 +9,7 @@ import { paymentRoutes } from './app/modules/Payments/payment.routes';
 import { categoryRouter } from './app/modules/category/category.routes';
 import { FlashSaleRoutes } from './app/modules/flashSell/flashSale.routes';
 import { brandRoutes } from './app/modules/brand/brand.routes';
+import { NewsLetterRoutes } from './app/modules/newsletter/newsletter.route';
 
 const app: Application = express();
 
@@ -49,6 +50,7 @@ app.use('/api/v1/payment', paymentRoutes); // Payment routes
 app.use('/api/v1/category', categoryRouter); // Category routes
 app.use('/api/v1/flash-sale', FlashSaleRoutes); // Flash Sale routes
 app.use('/api/v1/brand', brandRoutes); // Brand routes
+app.use('/api/v1/newsletter', NewsLetterRoutes); // Brand routes
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: any) => {

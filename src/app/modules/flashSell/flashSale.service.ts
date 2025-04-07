@@ -23,15 +23,13 @@ const createFlashSale = async (flashSellData: ICreateFlashSaleInput) => {
 
   const result = await FlashSale.bulkWrite(operations);
 
-  // ✅ Ensure each product updates its offerPrice
-  console.log(products);
   await Promise.all(
     products.map(async (productId) => {
       const listing = await productModel.findById(productId);
       if (listing) {
         const newOfferPrice = await listing.calculateOfferPrice();
         if (newOfferPrice !== null) {
-          await productModel.updateOne({ _id: productId }, { $set: { offerPrice: newOfferPrice } });
+          await productModel.updateOne({ _id: productId }, { $set: { offerPrice: newOfferPrice, status: "sale" } });
         }
       }
     })
@@ -62,7 +60,7 @@ const getActiveFlashSalesService = async (query: Record<string, unknown>) => {
         product.offerPrice = product.price - discount;
 
         // ✅ Ensure offerPrice updates in DB
-        await productModel.updateOne({ _id: product._id }, { $set: { offerPrice: product.offerPrice } });
+        await productModel.updateOne({ _id: product._id }, { $set: { offerPrice: product.offerPrice, status: "sale", discount: discountPercentage } });
       }
 
       return product;
@@ -87,7 +85,7 @@ const removeFromFlashSale = async (productId: string) => {
   // Step 2: Reset the offerPrice in the Listing model
   await productModel.updateOne(
     { _id: productId },
-    { $set: { offerPrice: 0 } }
+    { $set: { offerPrice: 0, status: "featured", discount: 0 } }
   );
 
   return { message: "Product removed from Flash Sale and offer price reset" };

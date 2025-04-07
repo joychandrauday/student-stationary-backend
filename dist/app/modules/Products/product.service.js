@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // 4. Service
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -21,13 +22,19 @@ const addProductToDB = (product) => __awaiter(void 0, void 0, void 0, function* 
 // Assuming you're using Mongoose for MongoDB
 const getAllProducts = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, brand, category, description, inStock, status, minQuantity, maxQuantity, minPrice, maxPrice, minRating, maxRating, page = "1", // Default page 1
+        const { searchTerm, name, brand, category, description, inStock, status, minQuantity, maxQuantity, minPrice, maxPrice, minRating, maxRating, page = "1", // Default page 1
         perPage = "10", // Default perPage 10
         sortBy, sortOrder = "asc", // Default ascending order
          } = query;
         // Create a filter object
         const filter = {};
         // Add filters based on query parameters
+        if (searchTerm) {
+            filter.$or = [
+                { name: { $regex: new RegExp(searchTerm, "i") } },
+                { description: { $regex: new RegExp(searchTerm, "i") } }
+            ];
+        }
         if (name)
             filter.name = { $regex: new RegExp(name, "i") };
         if (description)
@@ -112,7 +119,8 @@ const getTotalCount = (filter) => __awaiter(void 0, void 0, void 0, function* ()
 });
 const getSingleProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(id);
-    const product = yield product_model_1.productModel.findById(id).populate('reviews.userId', 'name avatar');
+    const product = yield product_model_1.productModel.findById(id).populate('reviews.userId', 'name avatar').populate("category")
+        .populate("brand");
     return product;
 });
 const updateProductInDB = (id, updatedProduct) => __awaiter(void 0, void 0, void 0, function* () {
@@ -125,11 +133,30 @@ const deleteProductFromDB = (id) => __awaiter(void 0, void 0, void 0, function* 
     const result = yield product_model_1.productModel.findByIdAndDelete(id);
     return result;
 });
+const getAllProductReviews = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Fetch all products and populate 'reviews' along with 'userId' in each review
+        const products = yield product_model_1.productModel.find({}).populate({
+            path: 'reviews',
+            populate: {
+                path: 'userId',
+                select: 'name email avatar' // Select the fields you want from the user model
+            }
+        });
+        // Flatten the array of reviews from all products
+        const allReviews = products.flatMap((product) => product.reviews);
+        return allReviews;
+    }
+    catch (error) {
+        throw new Error('Error fetching reviews: ');
+    }
+});
 exports.productService = {
     addProductToDB,
     getAllProducts,
     getSingleProduct,
     updateProductInDB,
     deleteProductFromDB,
-    getTotalCount
+    getTotalCount,
+    getAllProductReviews
 };

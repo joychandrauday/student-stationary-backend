@@ -126,10 +126,32 @@ const deletingProduct = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
     }
 });
+const getAllProductReviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Fetch all reviews from all products
+        const reviews = yield product_service_1.productService.getAllProductReviews();
+        // Send success response with reviews data
+        (0, sendResponse_1.default)(res, {
+            statusCode: http_status_codes_1.StatusCodes.OK,
+            success: true,
+            message: 'All product reviews retrieved successfully',
+            data: reviews,
+        });
+    }
+    catch (error) {
+        // Handle and send error response
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to retrieve reviews",
+            error,
+        });
+    }
+});
 exports.productController = {
     addingProduct,
     gettingProducts,
     gettingProduct,
     updatingProduct,
-    deletingProduct
+    deletingProduct,
+    getAllProductReviews
 };

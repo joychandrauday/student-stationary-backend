@@ -33,14 +33,12 @@ const createFlashSale = (flashSellData) => __awaiter(void 0, void 0, void 0, fun
         },
     }));
     const result = yield flashSale_model_1.FlashSale.bulkWrite(operations);
-    // ✅ Ensure each product updates its offerPrice
-    console.log(products);
     yield Promise.all(products.map((productId) => __awaiter(void 0, void 0, void 0, function* () {
         const listing = yield product_model_1.productModel.findById(productId);
         if (listing) {
             const newOfferPrice = yield listing.calculateOfferPrice();
             if (newOfferPrice !== null) {
-                yield product_model_1.productModel.updateOne({ _id: productId }, { $set: { offerPrice: newOfferPrice } });
+                yield product_model_1.productModel.updateOne({ _id: productId }, { $set: { offerPrice: newOfferPrice, status: "sale" } });
             }
         }
     })));
@@ -60,7 +58,7 @@ const getActiveFlashSalesService = (query) => __awaiter(void 0, void 0, void 0, 
             const discount = (discountPercentage / 100) * product.price;
             product.offerPrice = product.price - discount;
             // ✅ Ensure offerPrice updates in DB
-            yield product_model_1.productModel.updateOne({ _id: product._id }, { $set: { offerPrice: product.offerPrice } });
+            yield product_model_1.productModel.updateOne({ _id: product._id }, { $set: { offerPrice: product.offerPrice, status: "sale", discount: discountPercentage } });
         }
         return product;
     })));
@@ -77,7 +75,7 @@ const removeFromFlashSale = (productId) => __awaiter(void 0, void 0, void 0, fun
         throw new Error("Product not found in Flash Sale");
     }
     // Step 2: Reset the offerPrice in the Listing model
-    yield product_model_1.productModel.updateOne({ _id: productId }, { $set: { offerPrice: 0 } });
+    yield product_model_1.productModel.updateOne({ _id: productId }, { $set: { offerPrice: 0, status: "featured", discount: 0 } });
     return { message: "Product removed from Flash Sale and offer price reset" };
 });
 exports.FlashSaleService = {

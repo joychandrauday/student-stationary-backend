@@ -13,4 +13,5 @@ router.get('/', product_controller_1.productController.gettingProducts);
 router.get('/:productId', product_controller_1.productController.gettingProduct);
 router.patch('/:productId', product_controller_1.productController.updatingProduct);
 router.delete('/:productId', product_controller_1.productController.deletingProduct);
+router.get('/reviews/all', product_controller_1.productController.getAllProductReviews);
 exports.productRoutes = router;

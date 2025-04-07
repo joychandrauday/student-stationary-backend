@@ -14,6 +14,7 @@ const payment_routes_1 = require("./app/modules/Payments/payment.routes");
 const category_routes_1 = require("./app/modules/category/category.routes");
 const flashSale_routes_1 = require("./app/modules/flashSell/flashSale.routes");
 const brand_routes_1 = require("./app/modules/brand/brand.routes");
+const newsletter_route_1 = require("./app/modules/newsletter/newsletter.route");
 const app = (0, express_1.default)();
 // Middleware setup
 app.use(express_1.default.json()); // To parse incoming JSON requests
@@ -48,6 +49,7 @@ app.use('/api/v1/payment', payment_routes_1.paymentRoutes); // Payment routes
 app.use('/api/v1/category', category_routes_1.categoryRouter); // Category routes
 app.use('/api/v1/flash-sale', flashSale_routes_1.FlashSaleRoutes); // Flash Sale routes
 app.use('/api/v1/brand', brand_routes_1.brandRoutes); // Brand routes
+app.use('/api/v1/newsletter', newsletter_route_1.NewsLetterRoutes); // Brand routes
 // Global error handler
 app.use((err, req, res, next) => {
     console.error("Global error:", err); // Log the error to the console

@@ -126,6 +126,27 @@ const deletingProduct = async (req: Request, res: Response) => {
     })
   }
 }
+const getAllProductReviews = async (req: Request, res: Response) => {
+  try {
+    // Fetch all reviews from all products
+    const reviews = await productService.getAllProductReviews();
+
+    // Send success response with reviews data
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: 'All product reviews retrieved successfully',
+      data: reviews,
+    });
+  } catch (error) {
+    // Handle and send error response
+    res.status(500).json({
+      success: false,
+      message: (error as Error).message || "Failed to retrieve reviews",
+      error,
+    });
+  }
+};
 
 
 export const productController = {
@@ -133,5 +154,6 @@ export const productController = {
   gettingProducts,
   gettingProduct,
   updatingProduct,
-  deletingProduct
+  deletingProduct,
+  getAllProductReviews
 }

@@ -9,5 +9,6 @@ router.get('/', productController.gettingProducts)
 router.get('/:productId', productController.gettingProduct)
 router.patch('/:productId', productController.updatingProduct)
 router.delete('/:productId', productController.deletingProduct)
+router.get('/reviews/all', productController.getAllProductReviews);
 
 export const productRoutes = router

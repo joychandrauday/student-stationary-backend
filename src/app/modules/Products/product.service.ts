@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // 4. Service
 
@@ -15,6 +16,7 @@ const addProductToDB = async (product: IProduct) => {
 const getAllProducts = async (query: Record<string, unknown>) => {
   try {
     const {
+      searchTerm,
       name,
       brand,
       category,
@@ -37,6 +39,12 @@ const getAllProducts = async (query: Record<string, unknown>) => {
     const filter: any = {};
 
     // Add filters based on query parameters
+    if (searchTerm) {
+      filter.$or = [
+        { name: { $regex: new RegExp(searchTerm as string, "i") } },
+        { description: { $regex: new RegExp(searchTerm as string, "i") } }
+      ];
+    }
     if (name) filter.name = { $regex: new RegExp(name as string, "i") };
     if (description) filter.description = { $regex: new RegExp(description as string, "i") };
     if (category) filter.category = category;
@@ -117,7 +125,8 @@ const getTotalCount = async (filter: RootFilterQuery<IProduct> | undefined) => {
 };
 const getSingleProduct = async (id: string) => {
   console.log(id);
-  const product = await productModel.findById(id).populate('reviews.userId', 'name avatar')
+  const product = await productModel.findById(id).populate('reviews.userId', 'name avatar').populate("category")
+    .populate("brand")
   return product;
 }
 
@@ -132,6 +141,25 @@ const deleteProductFromDB = async (id: string) => {
   const result = await productModel.findByIdAndDelete(id);
   return result;
 }
+const getAllProductReviews = async () => {
+  try {
+    // Fetch all products and populate 'reviews' along with 'userId' in each review
+    const products = await productModel.find({}).populate({
+      path: 'reviews',
+      populate: {
+        path: 'userId',
+        select: 'name email avatar' // Select the fields you want from the user model
+      }
+    });
+
+    // Flatten the array of reviews from all products
+    const allReviews = products.flatMap((product) => product.reviews);
+
+    return allReviews;
+  } catch (error) {
+    throw new Error('Error fetching reviews: ');
+  }
+};
 
 export const productService = {
   addProductToDB,
@@ -139,5 +167,6 @@ export const productService = {
   getSingleProduct,
   updateProductInDB,
   deleteProductFromDB,
-  getTotalCount
+  getTotalCount,
+  getAllProductReviews
 };

@@ -61,13 +61,14 @@ const getOrders = async (startDate?: string, endDate?: string) => {
   const orders = await orderModel
     .find(filter)
     .populate('user', 'name email')
-    .populate('products.productId', 'name price featuredImages');
+    .populate('products.productId', 'name price featuredImages')
+    .sort({ orderDate: -1 });
   return orders
 }
 // get single order
 
 const getOrderById = async (orderId: string) => {
-  const order = await orderModel.findById(orderId).populate('user', 'name,email').populate('products.productId')
+  const order = await orderModel.findById(orderId).populate('user', 'name email').populate('products.productId')
   return order
 }
 

@@ -54,12 +54,13 @@ const getOrders = (startDate, endDate) => __awaiter(void 0, void 0, void 0, func
     const orders = yield order_model_1.orderModel
         .find(filter)
         .populate('user', 'name email')
-        .populate('products.productId', 'name price featuredImages');
+        .populate('products.productId', 'name price featuredImages')
+        .sort({ orderDate: -1 });
     return orders;
 });
 // get single order
 const getOrderById = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const order = yield order_model_1.orderModel.findById(orderId).populate('user', 'name,email').populate('products.productId');
+    const order = yield order_model_1.orderModel.findById(orderId).populate('user', 'name email').populate('products.productId');
     return order;
 });
 // get order by userId
